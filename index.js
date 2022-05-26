@@ -47,9 +47,9 @@ const run = async () => {
     const paymentCollection = client.db("manufacture").collection("payments");
 
 
-    app.get("/", () => async (req, res) => {
+    app.get("/",  async (req, res) => {
 
-res.send({result:success});
+res.send({result:'success'});
 
     });
     app.post('/products', async (req, res) => {
@@ -190,7 +190,8 @@ res.send({result:success});
     app.patch('/user/admin/:id', async (req, res) => {
       const email = req.params.id;
       const query = { email: email }
-      const result = await orderCollection.findOne(query);
+      const result = await userCollection.findOne(query);
+
       console.log(result);
 
     })
