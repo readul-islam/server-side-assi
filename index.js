@@ -8,21 +8,21 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 const cors = require('cors');
-const productRoutes = require('./routes/Products');
-// const { default: Stripe } = require('stripe');
+
+
 
 app.use(cors());
 app.use(express.json());
 require("dotenv").config();
 const jwtToken = (req, res, next) => {
   const authHeader = req.body.headers.Authorization;
-  //  console.log(authHeader)
+  
   if (!authHeader) {
     res.send('massage:Undathorized')
   } else {
     const token = authHeader.split(' ')[1]
-    console.log(token);
-    console.log(token);
+   
+   
     jwt.verify(token, process.env.ACESS_TOKEN, function (err, decoded) {
       if (err) {
         res.send({ massage: 'forbidden access' })
@@ -46,6 +46,14 @@ const run = async () => {
     const userCollection = client.db("manufacture").collection("users");
     const paymentCollection = client.db("manufacture").collection("payments");
 
+    app.post('/products', async (req, res) => {
+
+      const product = req.body;
+      console.log(product);
+
+      const result = await productCollection.insertOne(product);
+      res.send(result);
+    })
     app.get('/products', async (req, res) => {
 
       const query = {};
@@ -61,6 +69,22 @@ const run = async () => {
       const query = { _id: ObjectId(id) }
       const result = await productCollection.findOne(query);
       res.send(result)
+
+    })
+    app.post("/payment-init",  async (req, res) => {
+      const price = req.body
+      const amount = price.total * 100
+      console.log(amount);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_methods_type: ['card']
+
+      })
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
 
     })
 
@@ -82,7 +106,7 @@ const run = async () => {
     //    -------------------------------
     app.get('/order/:id', async (req, res) => {
       const email = req.params.id
-      console.log(email);
+      
       const query = {email:email}
       const cursor = orderCollection.find(query);
       const result = await cursor.toArray()
@@ -133,33 +157,7 @@ const run = async () => {
 
 
     // -----------------------------for payment--------------
-    app.post("/payment", jwtToken, async (req, res) => {
-      const price = req.body
-      const amount = price.total * 100
-
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount,
-        currency: "usd",
-        automatic_payment_methods: {
-          enabled: true,
-        },
-
-      })
-      res.send({
-        clientSecret: paymentIntent.client_secret,
-      });
-
-    })
-
-
-
-
-
-
-
-
-
-
+    
     app.put('/user/:id', async (req, res) => {
       const userEmail = req.params.id;
       const filter = { email: userEmail };
@@ -175,48 +173,22 @@ const run = async () => {
       res.send({ token: token, result: result })
 
     })
+    app.get('/user', async (req, res) => {
+
+      const query = {};
+      const cursor = userCollection.find(query);
+      const result = await cursor.toArray()
+      res.send(result)
+    })
+    app.get('/user/:id', async (req, res) => {
+      const email = req.params.id;
+    
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // ---------------------------------
-
+      const query = { email:email }
+      const result = await userCollection.findOne(query);
+      res.send(result)
+    })
 
   }
   catch (e) {
@@ -230,7 +202,7 @@ run().catch(console.dir);
 
 
 
-app.use('/user', productRoutes)
+
 
 
 app.listen(port, () => {
