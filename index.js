@@ -2,12 +2,12 @@ const express = require('express');
 var jwt = require('jsonwebtoken');
 
 //stripe key 
-const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 const cors = require('cors');
+const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 
 
@@ -47,9 +47,9 @@ const run = async () => {
     const paymentCollection = client.db("manufacture").collection("payments");
 
 
-    app.get("/",  async (req, res) => {
+    app.get("/", async (req, res) => {
 
-res.send({result:'success'});
+      res.send({ result: 'success' });
 
     });
     app.post('/products', async (req, res) => {
@@ -68,6 +68,16 @@ res.send({result:'success'});
       res.send(result)
     })
 
+    app.delete('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+
+
+      const query = { _id: ObjectId(id) }
+      const result = await productCollection.deleteOne(query);
+      res.send(result)
+
+    })
     app.get('/products/:id', async (req, res) => {
       const id = req.params.id;
 
@@ -114,6 +124,16 @@ res.send({result:'success'});
       const email = req.params.id
 
       const query = { email: email }
+      const cursor = orderCollection.find(query);
+      const result = await cursor.toArray()
+      res.send(result)
+
+
+    })
+    app.get('/order', async (req, res) => {
+     
+
+      const query = {}
       const cursor = orderCollection.find(query);
       const result = await cursor.toArray()
       res.send(result)
@@ -192,7 +212,8 @@ res.send({result:'success'});
       const query = { email: email }
       const result = await userCollection.findOne(query);
 
-      console.log(result);
+
+
 
     })
 
