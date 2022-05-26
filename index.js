@@ -1,7 +1,8 @@
+require("dotenv").config();
 const express = require('express');
 var jwt = require('jsonwebtoken');
 
-//stripe key 
+
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
@@ -13,7 +14,6 @@ const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 app.use(cors());
 app.use(express.json());
-require("dotenv").config();
 const jwtToken = (req, res, next) => {
   const authHeader = req.body.headers.Authorization;
 
@@ -52,6 +52,7 @@ const run = async () => {
       res.send({ result: 'success' });
 
     });
+    //post product collection
     app.post('/products', async (req, res) => {
 
       const product = req.body;
@@ -60,6 +61,7 @@ const run = async () => {
       const result = await productCollection.insertOne(product);
       res.send(result);
     })
+    //get all products
     app.get('/products', async (req, res) => {
 
       const query = {};
@@ -67,7 +69,7 @@ const run = async () => {
       const result = await cursor.toArray()
       res.send(result)
     })
-
+    //delete a products 
     app.delete('/products/:id', async (req, res) => {
       const id = req.params.id;
       console.log(id);
@@ -78,6 +80,7 @@ const run = async () => {
       res.send(result)
 
     })
+    //get a product for order
     app.get('/products/:id', async (req, res) => {
       const id = req.params.id;
 
@@ -87,6 +90,7 @@ const run = async () => {
       res.send(result)
 
     })
+    //payment system
     app.post("/payment-init", async (req, res) => {
       const price = req.body
       const amount = price.total * 100
@@ -104,7 +108,8 @@ const run = async () => {
 
     })
 
-    // -------------------
+    // post review
+
     app.post('/review', async (req, res) => {
       const review = req.body;
 
@@ -112,6 +117,7 @@ const run = async () => {
       res.send(result);
 
     })
+    //get all review
     app.get('/review', async (req, res) => {
 
       const query = {};
@@ -119,7 +125,7 @@ const run = async () => {
       const result = await cursor.toArray()
       res.send(result)
     })
-    //    -------------------------------
+    //   get order for current user
     app.get('/order/:id', async (req, res) => {
       const email = req.params.id
 
@@ -130,6 +136,7 @@ const run = async () => {
 
 
     })
+    //get all order for admin
     app.get('/order', async (req, res) => {
      
 
@@ -140,6 +147,7 @@ const run = async () => {
 
 
     })
+    //delete order for user
     app.delete('/order/:id', async (req, res) => {
       const id = req.params.id;
 
@@ -147,6 +155,7 @@ const run = async () => {
       const result = await orderCollection.deleteOne(query);
       res.send(result)
     })
+     
     app.get('/order/:id', async (req, res) => {
       const id = req.params.id;
 
@@ -155,6 +164,7 @@ const run = async () => {
       const result = await orderCollection.findOne(query);
       res.send(result)
     })
+    
     app.patch('/order/:id', async (req, res) => {
       const id = req.params.id;
       const payment = req.body
