@@ -180,12 +180,35 @@ const run = async () => {
       const result = await cursor.toArray()
       res.send(result)
     })
+
+ app.patch('/user/admin/:id', async (req, res) => {
+  const email = req.params.id;
+  const query = { email:email }
+  const result = await orderCollection.findOne(query);
+  console.log(result);
+
+ })
+
+    app.put('/user/admin/:id', async (req, res) => {
+      const email = req.params.id;
+      const admin = req.body.admin
+    
+      const query = { email:email }
+      const options = { upsert: true };
+      const user = {
+       $set: {
+         rule: admin.rule
+       },
+     };
+     const result = await userCollection.updateOne(query, user, options);
+res.send(result)
+    })
+
+
     app.get('/user/:id', async (req, res) => {
       const email = req.params.id;
     
-
-
-      const query = { email:email }
+   const query = { email:email }
       const result = await userCollection.findOne(query);
       res.send(result)
     })
