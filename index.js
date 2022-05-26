@@ -2,7 +2,7 @@ const express = require('express');
 var jwt = require('jsonwebtoken');
 
 //stripe key 
-const stripe = require("stripe")('sk_test_51L1AL5E24HHvYt8NXQn1l7Wichrhs2EzUaMZxJkATi12Gdq2EEzFyZZ8YFMf8Pq5dXr1GdSgoOC2Do21V0VlcBDt00HtDXydNz');
+const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
@@ -16,13 +16,13 @@ app.use(express.json());
 require("dotenv").config();
 const jwtToken = (req, res, next) => {
   const authHeader = req.body.headers.Authorization;
-  
+
   if (!authHeader) {
     res.send('massage:Undathorized')
   } else {
     const token = authHeader.split(' ')[1]
-   
-   
+
+
     jwt.verify(token, process.env.ACESS_TOKEN, function (err, decoded) {
       if (err) {
         res.send({ massage: 'forbidden access' })
@@ -46,6 +46,12 @@ const run = async () => {
     const userCollection = client.db("manufacture").collection("users");
     const paymentCollection = client.db("manufacture").collection("payments");
 
+
+    app.get("/", () => async (req, res) => {
+
+res.send({result:success});
+
+    });
     app.post('/products', async (req, res) => {
 
       const product = req.body;
@@ -71,7 +77,7 @@ const run = async () => {
       res.send(result)
 
     })
-    app.post("/payment-init",  async (req, res) => {
+    app.post("/payment-init", async (req, res) => {
       const price = req.body
       const amount = price.total * 100
       console.log(amount);
@@ -106,8 +112,8 @@ const run = async () => {
     //    -------------------------------
     app.get('/order/:id', async (req, res) => {
       const email = req.params.id
-      
-      const query = {email:email}
+
+      const query = { email: email }
       const cursor = orderCollection.find(query);
       const result = await cursor.toArray()
       res.send(result)
@@ -157,7 +163,7 @@ const run = async () => {
 
 
     // -----------------------------for payment--------------
-    
+
     app.put('/user/:id', async (req, res) => {
       const userEmail = req.params.id;
       const filter = { email: userEmail };
@@ -181,34 +187,34 @@ const run = async () => {
       res.send(result)
     })
 
- app.patch('/user/admin/:id', async (req, res) => {
-  const email = req.params.id;
-  const query = { email:email }
-  const result = await orderCollection.findOne(query);
-  console.log(result);
+    app.patch('/user/admin/:id', async (req, res) => {
+      const email = req.params.id;
+      const query = { email: email }
+      const result = await orderCollection.findOne(query);
+      console.log(result);
 
- })
+    })
 
     app.put('/user/admin/:id', async (req, res) => {
       const email = req.params.id;
       const admin = req.body.admin
-    
-      const query = { email:email }
+
+      const query = { email: email }
       const options = { upsert: true };
       const user = {
-       $set: {
-         rule: admin.rule
-       },
-     };
-     const result = await userCollection.updateOne(query, user, options);
-res.send(result)
+        $set: {
+          rule: admin.rule
+        },
+      };
+      const result = await userCollection.updateOne(query, user, options);
+      res.send(result)
     })
 
 
     app.get('/user/:id', async (req, res) => {
       const email = req.params.id;
-    
-   const query = { email:email }
+
+      const query = { email: email }
       const result = await userCollection.findOne(query);
       res.send(result)
     })
