@@ -12,7 +12,7 @@ const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 
 
-app.use(cors());
+app.use(cors({origin:'https://assignment-12-8b5b3.web.app'}));
 app.use(express.json());
 const jwtToken = (req, res, next) => {
   const authHeader = req.body.headers.Authorization;
